@@ -1,0 +1,324 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Resources:
+  WebEC2Instance: #LogicalId
+    Type: 'AWS::EC2::Instance' #cloudprovides/cloudservicename/data-values:
+    Properties:
+      ImageId: ami-0cff7528ff583bf9a
+      InstanceType: t2.micro
+      KeyName: pair2
+---
+
+AWSTemplateFormatVersion: "2010-09-09"
+Description: my-apache-server-instance
+Resources:
+   ApacheEC2Instance:  # Logical ID
+     Type: 'AWS::EC2::Instance'
+     Properties:
+       ImageId: 
+       IntanceType: t2.medium
+       KeyName: pair1
+
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "my firth bucket in mumbai"
+Resources:
+  S3Bucket: # logical id for unique
+    Type: 'AWS::S3::Bucket' #cloudprovides/cloudservicename/data-values:
+    Properties:
+      BucketName: my-first-bucket-in-mumbai
+Outputs:
+  BucketName:
+      value: !Ref 'S3Bucket'       
+
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "my firth bucket in mumbai"
+Parameters: 
+    S3BucketName:
+        Description: "enter here s3 bucket name"
+        Type: string
+        MinLength: 3
+        MaxLength: 64
+        AllowedPattern: "{A-Za-z}+"
+Resources:
+  S3Bucket: #logicalidforunique
+    Type: 'AWS::S3::Bucket' #cloudprovides/cloudservicename/data-values:
+    Properties:
+      BucketName: !Ref 'S3BucketName'
+Outputs:
+  BucketName:
+      value: !Ref 'S3Bucket' 
+
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "input from user to values"
+Parameters: 
+     InstanceParammeter: # Logical Id
+        Type: string
+        Default: t2.micro
+        AllowedValues:
+          - t2.micro
+          - t2.nano
+          - t2.medium
+          - t2.large
+          - c2.large
+          - m1.large
+        Description: Choose t2.micro t2.nano t2.medium
+Resources:
+    EC2Instance: # Unique Logical Id
+       Description: "This instance value refference to parammeters"
+       Type: 'AWS::EC2::Instance'
+       Properties:
+         ImageId: ami-0cff7528ff583bf9a
+         InstanceType: !Ref 'InstanceParammeter'
+         KeyName: new2
+Outputs: 
+    InstanceType:
+       Values: !Ref 'EC2Instance'
+
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Instance Mapping with values
+Parameters:
+    ec2: #LogicalId
+      Type: string
+      AllowedValues:
+        - dev
+        - qa
+        - prod
+      Description: Enter your Environment dev, qa, prod
+Mappings:
+    environment: #LogicalID
+      dev:
+        name: "dev"
+        instanceType: "t2.xlarge"
+      qa: 
+        name: "qa"
+        instanceType: "t2.medium"
+      prod:
+        name: "prod"
+        instanceType: "t2.xlarge"
+Resources:
+    InstanceID: # logical Id
+       Type: 'AWS::EC2::Instance'
+       Properties:
+         InstanceType: !FindInMap [environment, !Ref ec2, instanceType]
+         ImageId: ami-0cff7528ff583bf9a
+         Tags:
+           - Key: "name"
+             Value: !FindInMap [environment, !Ref ec2, name]
+Outputs:
+   InstanceName: 
+     value: !Ref 'InstanceID'
+
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Instance Mapping with values
+Parameters:
+    ec2: #LogicalId
+      Type: string
+      AllowedValues:
+        - dev
+        - qa
+        - prod
+      Description: Enter your Environment dev, qa, prod
+Mappings:
+    environment: #LogicalID
+      dev:
+        name: "dev"
+        instanceType: "t2.xlarge"
+      qa: 
+        name: "qa"
+        instanceType: "t2.medium"
+      prod:
+        name: "prod"
+        instanceType: "t2.xlarge"
+Conditions:
+  con1: !Equals [!Ref environment, prod] #logical id
+Resources:
+    InstanceID: # logical Id
+       Type: 'AWS::EC2::Instance'
+       Properties:
+         InstanceType: !FindInMap [environment, !Ref ec2, instanceType]
+         ImageId: ami-0cff7528ff583bf9a
+         Tags:
+           - Key: "name"
+             Value: !FindInMap [environment, !Ref ec2, name]
+    MountPoint:
+      Type: 'AWS::EBS::VolumeAttachment'
+      Conditions: con1
+      Properties:
+        InstanceId: 
+            !Ref 'InstanceID'
+        VolumeId: 
+            !Ref 'NewVolume'
+        Device: /dev/sdh
+    NewVolume:
+      Type: 'AWS::EC2::Volume'
+      Conditions: con1
+      Properties:
+        size: 100
+        AvailabilityZone: 
+           !GetAtt Instance.AvailabilityZones
+Outputs:
+    InstanceName: 
+       Value: !Ref 'InstanceId'
+    VolumeId:
+       Value: !Ref 'NewVolume'
+
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  S3BucketName:
+     Description: Enter Here Bucket Name
+     type: string
+  InstanceParammeter: # Logical Id
+        Type: string
+        Default: t2.micro
+        AllowedValues:
+          - t2.micro
+          - t2.nano
+          - t2.medium
+          - t2.large
+          - c2.large
+          - m1.large
+        Description: Choose t2.micro t2.nano t2.medium
+Resources:
+  C2Instance: # Unique Logical Id
+       Description: "This instance value refference to parammeters"
+       Type: 'AWS::EC2::Instance'
+       Properties:
+         ImageId: ami-0cff7528ff583bf9a
+         InstanceType: !Ref 'InstanceParammeter'
+         KeyName: new2
+         UserData:
+          Fn::Base64:
+            !Sub |
+            #!/bin/bash
+            apt-get update -y
+            apt install docker -y
+            service docker start
+            apt install nginx -y
+            service nginx start
+  S3Bucket:
+     Type: 'AWS::S3::Bucket' 
+     Properties:
+      BucketName: !Ref 'S3BucketName'
+Outputs:
+  BucketName:
+    Value: !Ref S3Bucket
+
+--- 
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Resources for Instances and Buckets"
+Parameters: 
+    WebPara: #LogicalID
+       Type: String
+       Default: t2.micro
+       AllowedValues:
+         - t2.small
+         - t2.micro
+         - t2.medium
+         - t2.xlarge
+       Description: Choose a instance
+    NewPara: #Logical ID
+      Type: String
+      AllowedPattern: "[A-Za0-Z9]+"
+    KeyPara: #Logical ID
+      Type: String
+      AllowedPattern: "[A-Za-Z]+"
+    Bucket: #Logical ID
+      Type: String
+      AllowedPattern:
+         Value: "[A-Za-z]+"
+Resources:
+    WebInstance: #LogicalID
+      Type: 'AWS::EC2::Instance'
+      Properties:
+        InstanceType: !Ref WebPara
+        ImageId: ami-
+        KeyName: !Ref NewPara
+        Key: "Name"
+        Value: !Ref KeyPara
+    S3Bucket:
+      Type: AWS::S3::BucketName
+      Properties:
+        BucketName: !Ref Bucket
+Outputs:
+    InstanceId: 
+       Value: !Ref WebInstance
+    InstanceName:
+       Value: !Ref WebInstance
+
+---
+Parameters:
+  S3Parameter:
+    Type: String
+    Description: Set a bucket Name
+Resources:
+  S3Bucket:
+    Type: AWS::S3::BucketName
+    Properties:
+      BuckerName: !Join ('-')
+         !Ref 'S3Parameter'
+Outputs:
+  S3BuckerName:
+    Values: !Ref S3Bucket
+
+---
+AWSTemplateFormatVersion: "2010-09-09"
+Description: adding a security group
+Parameters:
+  ParaInstance: #Logical ID
+    Type: String
+    Default: t2.micro
+    AllowedValues: 
+      - t2.micro
+      - t3.small
+      - t2.medium
+      - t2.large
+      - t2.small
+    Description: Choose Instance Type
+  KeyPair:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: Choose a key name from here
+  AvailabilityChoose: #LogicalID
+    Type: String
+    Default: ap-south-1a
+    AllowedValues:
+      - ap-south-1a
+      - ap-south-1b
+      - ap-south-1c
+Resources: #Logical ID
+  Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref ParaInstance
+      ImageId: ami-
+      KeyName: !Ref KeyPair
+      SecurityGroup:
+        - Default
+        - !Ref SecurityNew
+      AvailabilityZones: !Ref AvailabilityChoose
+  SecurityNew: #LogicalID
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      Description: adding a group
+      SecurityIngress:
+       - IpProtocol: tcp 
+         FromPort: '22'
+         ToPort: '22'
+         CidrIp: 0.0.0.0/0
+       - IpProtocol: http
+         FromPort: '80'
+         ToPort: '80'
+         CidrIp: 0.0.0.0/0
+  ElasticIp: #Logical ID 
+    Description: Assigned IP for a EC2 
+    Type: 'AWS::EC2::EIP'
+    Properties:
+      InstanceId: !Ref Instance
+Outputs:
+  InstanceName:
+    Value: !Ref Instance    
+
