@@ -1,0 +1,25 @@
+ AWSTemplateFormatVersion: "2010-09-09"
+  Description: "input from user to values"
+  Parameters: 
+      InstanceParammeter: # Logical Id
+          Type: string
+          Default: t2.micro
+          AllowedValues:
+            - t2.micro
+            - t2.nano
+            - t2.medium
+            - t2.large
+            - c2.large
+            - m1.large
+          Description: Choose t2.micro t2.nano t2.medium
+  Resources:
+      EC2Instance: # Unique Logical Id
+        Description: "This instance value refference to parammeters"
+        Type: 'AWS::EC2::Instance'
+        Properties:
+          ImageId: ami-0cff7528ff583bf9a
+          InstanceType: !Ref 'InstanceParammeter'
+          KeyName: new2
+  Outputs: 
+      InstanceType:
+        Values: !Ref 'EC2Instance'
