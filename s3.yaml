@@ -5,6 +5,7 @@
       Type: 'AWS::S3::Bucket' #cloudprovides/cloudservicename/data-values:
       Properties:
         BucketName: my-first-bucket-in-mumbai
+      DeletionPolicy: Retain
   Outputs:
     BucketName:
         value: !Ref 'S3Bucket'       
