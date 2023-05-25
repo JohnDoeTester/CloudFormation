@@ -35,7 +35,7 @@ Parameters:
     Description: choose the AZ and Default is 1a
 Resources:
    S3Bucket: 
-      Type: 'AWS::S3::Bucker'
+      Type: 'AWS::S3::Bucket'
       Properties: 
         BucketName: 
           Ref: BucketPara
