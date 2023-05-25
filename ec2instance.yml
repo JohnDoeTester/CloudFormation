@@ -1,0 +1,9 @@
+ AWSTemplateFormatVersion: "2010-09-09"
+  Description: my-apache-server-instance
+  Resources:
+    ApacheEC2Instance:  # Logical ID
+      Type: 'AWS::EC2::Instance'
+      Properties:
+        ImageId: 
+        IntanceType: t2.medium
+        KeyName: pair1
