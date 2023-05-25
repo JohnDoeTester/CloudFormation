@@ -1,0 +1,17 @@
+ AWSTemplateFormatVersion: "2010-09-09"
+  Description: "my firth bucket in mumbai"
+  Parameters: 
+      S3BucketName:
+          Description: "enter here s3 bucket name"
+          Type: string
+          MinLength: 3
+          MaxLength: 64
+          AllowedPattern: "{A-Za-z}+"
+  Resources:
+    S3Bucket: #logicalidforunique
+      Type: 'AWS::S3::Bucket' #cloudprovides/cloudservicename/data-values:
+      Properties:
+        BucketName: !Ref 'S3BucketName'
+  Outputs:
+    BucketName:
+        value: !Ref 'S3Bucket' 
