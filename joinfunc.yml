@@ -1,0 +1,13 @@
+Parameters:
+    S3Parameter:
+      Type: String
+      Description: Set a bucket Name
+  Resources:
+    S3Bucket:
+      Type: AWS::S3::BucketName
+      Properties:
+        BuckerName: !Join ('-')
+          !Ref 'S3Parameter'
+  Outputs:
+    S3BuckerName:
+      Values: !Ref S3Bucket
