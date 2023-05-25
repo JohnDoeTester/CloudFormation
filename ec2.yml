@@ -1,0 +1,8 @@
+  AWSTemplateFormatVersion: "2010-09-09"
+  Resources:
+    WebEC2Instance: #LogicalId
+      Type: 'AWS::EC2::Instance' #cloudprovides/cloudservicename/data-values:
+      Properties:
+        ImageId: ami-0cff7528ff583bf9a
+        InstanceType: t2.micro
+        KeyName: pair2
