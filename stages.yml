@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: "2010-09-09"
+  Description: Instance Mapping with values
+  Parameters:
+      ec2: #LogicalId
+        Type: string
+        AllowedValues:
+          - dev
+          - qa
+          - prod
+        Description: Enter your Environment dev, qa, prod
+  Mappings:
+      environment: #LogicalID
+        dev:
+          name: "dev"
+          instanceType: "t2.xlarge"
+        qa: 
+          name: "qa"
+          instanceType: "t2.medium"
+        prod:
+          name: "prod"
+          instanceType: "t2.xlarge"
+  Resources:
+      InstanceID: # logical Id
+        Type: 'AWS::EC2::Instance'
+        Properties:
+          InstanceType: !FindInMap [environment, !Ref ec2, instanceType]
+          ImageId: ami-0cff7528ff583bf9a
+          Tags:
+            - Key: "name"
+              Value: !FindInMap [environment, !Ref ec2, name]
+  Outputs:
+    InstanceName: 
+      value: !Ref 'InstanceID'
