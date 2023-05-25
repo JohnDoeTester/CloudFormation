@@ -30,6 +30,7 @@
           Tags:
             - Key: "name"
               Value: !FindInMap [environment, !Ref ec2, name]
+          DeletionPolicy: Snapshot
       MountPoint:
         Type: 'AWS::EBS::VolumeAttachment'
         Conditions: con1
