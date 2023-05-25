@@ -30,7 +30,6 @@
           Tags:
             - Key: "name"
               Value: !FindInMap [environment, !Ref ec2, name]
-          DeletionPolicy: Snapshot
       MountPoint:
         Type: 'AWS::EBS::VolumeAttachment'
         Conditions: con1
@@ -47,6 +46,7 @@
           size: 100
           AvailabilityZone: 
             !GetAtt Instance.AvailabilityZones
+        DeletionPolicy: Snapshot
   Outputs:
       InstanceName: 
         Value: !Ref 'InstanceId'
