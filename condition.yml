@@ -1,0 +1,53 @@
+ AWSTemplateFormatVersion: "2010-09-09"
+  Description: Instance Mapping with values
+  Parameters:
+      ec2: #LogicalId
+        Type: string
+        AllowedValues:
+          - dev
+          - qa
+          - prod
+        Description: Enter your Environment dev, qa, prod
+  Mappings:
+      environment: #LogicalID
+        dev:
+          name: "dev"
+          instanceType: "t2.xlarge"
+        qa: 
+          name: "qa"
+          instanceType: "t2.medium"
+        prod:
+          name: "prod"
+          instanceType: "t2.xlarge"
+  Conditions:
+    con1: !Equals [!Ref environment, prod] #logical id
+  Resources:
+      InstanceID: # logical Id
+        Type: 'AWS::EC2::Instance'
+        Properties:
+          InstanceType: !FindInMap [environment, !Ref ec2, instanceType]
+          ImageId: ami-0cff7528ff583bf9a
+          Tags:
+            - Key: "name"
+              Value: !FindInMap [environment, !Ref ec2, name]
+      MountPoint:
+        Type: 'AWS::EBS::VolumeAttachment'
+        Conditions: con1
+        Properties:
+          InstanceId: 
+              !Ref 'InstanceID'
+          VolumeId: 
+              !Ref 'NewVolume'
+          Device: /dev/sdh
+      NewVolume:
+        Type: 'AWS::EC2::Volume'
+        Conditions: con1
+        Properties:
+          size: 100
+          AvailabilityZone: 
+            !GetAtt Instance.AvailabilityZones
+  Outputs:
+      InstanceName: 
+        Value: !Ref 'InstanceId'
+      VolumeId:
+        Value: !Ref 'NewVolume'
