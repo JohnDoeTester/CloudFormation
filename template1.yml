@@ -1,0 +1,64 @@
+AWSTemplateFormatVersion: 2019-09-09
+Description: this template for instance and S3 bucket
+Parameters: 
+  BucketPara: #LogicaL ID
+    Type: String
+    AllowedPattern: "[A-Za-z0-9]+"
+    MinLength: 3
+    MaxLength: 63
+    Description: Give a Unique Name of your Bucket
+  InstancePara: 
+    Type: String
+    AllowedValues: 
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+    Description: select the instance as per needs
+  Name: 
+    Type: String 
+    Default: Name
+    AllowedPattern: "[A-Za-z0-9]+"
+  Value: 
+    Type: String
+    AllowedPattern: "[A-Za-z0-9]+"
+    Description: Give a Key value tags for your instance
+  AZ: 
+    Type: String
+    Default: ap-south-1a
+    AllowedValues:
+       - ap-south-1a
+       - ap-south-1b
+       - ap-south-1c
+    Description: choose the AZ and Default is 1a
+Resources:
+   S3Bucket: 
+      Type: 'AWS::S3::Bucker'
+      Properties: 
+        BucketName: 
+          Ref: BucketPara
+        Region: ap-mumbai-1
+   Instance: # Logical ID
+      Type: 'AWS::EC2::Instance'
+      Properties: 
+        InstanceType: !Ref InstancePara
+        ImageId: ami-65
+        KeyName: new1
+        Tags:
+           Name: !Ref Name
+           Value: !Ref Value
+        AvailabilityZones: 
+           Ref: AZ
+        SecurityGroup:
+          - Default
+Outputs: 
+    InstanceName: 
+      Value: !Ref Instance
+    InstanceId:
+      Value: !Ref Instance
+    BucketName:
+      Value: !Ref S3Bucket
+    SecurityGroup:
+      Value: !Ref Instance
