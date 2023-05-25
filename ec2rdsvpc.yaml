@@ -1,0 +1,131 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: this template for loadblancing and for instance for db instance or default vpc or adding rule security group
+Parameters:
+  InstanceType: 
+    Type: String
+    Default: t2.micro
+    AllowedValues: 
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+    Description: Choose Instance Type
+  InstanceAz: 
+    Type: String
+    AllowedValues:
+      - ap-south-1a
+      - ap-south-1b  
+      - ap-south-1c
+    Description: choose instance availability zone
+  KeyTags: 
+    Type: String
+    AllowedPattern: "[A-Za-z0-9]+"
+    Description: Give a tag your instance 
+  LoadBalancerAz: 
+    Type: String
+    AllowedValues: 
+      - ap-south-1a
+      - ap-south-1b
+      - ap-south-1c
+    Description: Select LoadBalancer AvailabilityZones
+  DbEngine: 
+    Type: String
+    Default: None
+    AllowedValues: 
+      - MySQL
+      - Microsoft SQL 
+      - MariaDB
+      - PostgreSQL
+      - Oracle SQL
+    Description: Select Database Engine Type
+  DbUser:
+    Type: String
+    Default: None
+    AllowedPattern: "[A-Za-z]+"
+    MinLength: 1 
+    MaxLength: 65
+    Description: Create DB Instance MasterUser
+  DbPassword: 
+    Type: String
+    Default: None
+    MinLength: 8
+    Description: Create DB Instance MasterUserPassword
+    MaxLength: 63
+Resources: 
+  MyWebInstance:
+    Type: AWS::EC2::Instance
+    Properties: 
+      InstanceType: !Ref InstanceType
+      ImageId: ami-0cff7528ff583bf9a
+      SecurityGroups:
+         - Ref DemoSG
+      AvailabilityZone: !Ref InstanceAz
+      Tags:
+        - Key: "Name"
+          Value: !Ref KeyTags
+      KeyName: new1
+    DeletionPolicy: Snapshot
+  Vpc:
+      Type: AWS::EC2::VPC
+      Properties:
+        VpcId: 
+          - Default
+  DemoSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: A Security Group for Demo-EC2
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0 
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0       
+  MyDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBSecurityGroups:
+        - !Ref DemoSG
+      AllocatedStorage: '5'
+      DBInstanceClass: db.t2.small
+      Engine: !Ref DbEngine
+      MasterUsername: !Ref DbUser
+      MasterUserPassword: !Ref DbPassword
+    DeletionPolicy: Snapshot  
+  MyLoadBalancer:
+    Type: AWS::ElasticLoadBalancing::LoadBalancer
+    Properties:
+      AvailabilityZones:
+       - !GetAtt MyWebInstance.AvailabilityZone
+       - !GetAtt DbInstance.AvailabilityZone
+      Instances:
+       - !Ref MyWebInstance
+       - !Ref DbInstance
+      Listeners:
+       - LoadBalancerPort: '80'
+         InstancePort: '80'
+         Protocol: HTTP
+      HealthCheck:
+        Target: HTTP:80/
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '5'
+        Interval: '30'
+        Timeout: '5'
