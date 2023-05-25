@@ -47,8 +47,8 @@ Resources:
         ImageId: ami-65
         KeyName: new1
         Tags:
-           Name: !Ref Name
-           Value: !Ref Value
+          - Name: !Ref Name
+            Value: !Ref Value
         AvailabilityZones: 
            Ref: AZ
         SecurityGroup:
