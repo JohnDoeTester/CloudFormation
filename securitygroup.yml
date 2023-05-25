@@ -39,7 +39,8 @@ Resources:
       Properties: 
         BucketName: 
           Ref: BucketPara
-        Region: ap-mumbai-1
+        Region: ap-south-1
+      DeletionPolicy: Retain
    Instance: # Logical ID
       Type: 'AWS::EC2::Instance'
       Properties: 
