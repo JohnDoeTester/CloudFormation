@@ -1,0 +1,55 @@
+ AWSTemplateFormatVersion: "2010-09-09"
+  Description: adding a security group
+  Parameters:
+    ParaInstance: #Logical ID
+      Type: String
+      Default: t2.micro
+      AllowedValues: 
+        - t2.micro
+        - t3.small
+        - t2.medium
+        - t2.large
+        - t2.small
+      Description: Choose Instance Type
+    KeyPair:
+      Type: 'AWS::EC2::KeyPair::KeyName'
+      Description: Choose a key name from here
+    AvailabilityChoose: #LogicalID
+      Type: String
+      Default: ap-south-1a
+      AllowedValues:
+        - ap-south-1a
+        - ap-south-1b
+        - ap-south-1c
+  Resources: #LogicalID
+    Instance:
+      Type: 'AWS::EC2::Instance'
+      Properties:
+        InstanceType: !Ref ParaInstance
+        ImageId: ami-
+        KeyName: !Ref KeyPair
+        SecurityGroup:
+          - Default
+          - !Ref SecurityNew
+        AvailabilityZones: !Ref AvailabilityChoose
+    SecurityNew: #LogicalID
+      Type: AWS::EC2::SecurityGroup
+      Properties: 
+        Description: adding a group
+        SecurityIngress:
+        - IpProtocol: tcp 
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: http
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+    ElasticIp: #Logical ID 
+      Description: Assigned IP for a EC2 
+      Type: 'AWS::EC2::EIP'
+      Properties:
+        InstanceId: !Ref Instance
+  Outputs:
+    InstanceName:
+      Value: !Ref Instance    
