@@ -1,0 +1,198 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: > 
+      This Template for Web server or DB server RDS or S3 Stack
+Parameters:
+  TypeInstance:
+    Type: String
+    Default: t2.micro
+    AllowedValues: 
+      - t1.micro
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - g2.2xlarge
+      - g2.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+      - cr1.8xlarge
+      - cc2.8xlarge
+      - cg1.4xlarge
+    Description: Select the Instance Type t2.micro, t2.nano, t2.medium
+  KeySelect:
+    Type: String
+    Default: None
+    ConstraintDescription: Select Instance Existing KeyPair
+  KeyValue:
+    Type: String
+    Default: None
+    AllowedPattern: "[A-Za-z0-9]+"
+    MinLength: '3'
+    MaxLength: '63'
+    ConstraintDescription: Enter here Key Tags Name
+  AZ:
+    Type: String
+    AllowedValues:
+      - ap-south-1a
+      - ap-south-1b
+      - ap-south-1c
+    ConstraintDescription: Select Instance Availability Zones
+  DbInstances:
+    Type: String
+    Default: db.t2.micro
+    AllowedValues: [db.t1.micro, db.m1.small, db.m1.medium, db.m1.large, db.m1.xlarge,
+      db.m2.xlarge, db.m2.2xlarge, db.m2.4xlarge, db.m3.medium, db.m3.large, db.m3.xlarge,
+      db.m3.2xlarge, db.m4.large, db.m4.xlarge, db.m4.2xlarge, db.m4.4xlarge, db.m4.10xlarge,
+      db.r3.large, db.r3.xlarge, db.r3.2xlarge, db.r3.4xlarge, db.r3.8xlarge, db.m2.xlarge,
+      db.m2.2xlarge, db.m2.4xlarge, db.cr1.8xlarge, db.t2.micro, db.t2.small, db.t2.medium,
+      db.t2.large]
+    ConstraintDescription: Select DB Instance Type as per needs.
+  EngineDb:
+    Type: String
+    Default: None
+    AllowedValues:
+      - MySQL
+      - PostgreSQL
+      - MicrosoftSQLServer
+      - MariaDB
+      - Oracle
+    ConstraintDescription: Select DB Instance Engine
+  User: 
+    NoEcho: 'true'
+    Type: String
+    Default: None
+    AllowedPattern: "[A-Za-z]+"
+    MinLength: '3'
+    MaxLength: '60'
+    ConstraintDescription: Enter Master user Name
+  Password:
+    NoEcho: 'true'
+    Type: String
+    Default: None
+    AllowedPattern: "[A-Za-z0-9]+"
+    MinLength: '8' 
+    MaxLength: '20'
+    ConstraintDescription: Enter Master UserPassword
+  Storage: 
+    Type: Number
+    Default: '5'
+    MinValue: '5'
+    MaxValue: '100'
+    ConstraintDescription: Enter allocated Database Storage
+  Db: 
+    Type: String
+    Default: None
+    AllowedPattern: "[A-Za-z]+"
+    MinLength: '3'
+    MaxLength: '63'
+    ConstraintDescription: Enter Here DB name
+  S3Buckets: 
+    Type: String
+    Default: None
+    AllowedPattern: "[A-Za-z]+"
+    MinLength: '3'
+    MaxLength: '63'
+    ConstraintDescription: Enter Unique Bucket Name
+  VersioningS3: 
+    Type: String
+    Default: Unversioned
+    AllowedValues: 
+       - Enabled
+       - Suspended
+    ConstraintDescription: Default is unversioned If you want Enable select them
+Resources:
+  WebServer: # Logical ID is this
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref TypeInstance
+      ImageId: ami
+      KeyName: !Ref KeySelect
+      Tags:
+      - Key: "Name"
+        Value: !Ref KeyValue
+      AvailabilityZone: !Ref AZ
+      SecurityGroups:
+        - Default
+    DeletionPolicy: Snapshot
+  DbInstance: # Logical ID
+    Type: 'AWS::RDS::DBInstance'
+    Properties: 
+      DBIntanceClass: !Ref DbInstances
+      AllocatedStorage: !Ref 
+      Engine: !Ref EngineDb
+      DBName: !Ref Db
+      MasterUsername: !Ref User
+      MasterUserPassword: !Ref Password
+      DBSecurityGroups:
+        - Default
+      AvailabilityZone: !GetAtt WebServer.AvailabilityZones
+    DeletionPolicy: Snapshot
+  S3Bucket: 
+    Type: 'AWS::S3::Bucket'
+    Properties: 
+      BucketName: !Ref S3Buckets
+      Region: ap-south-1
+      VersioningConfiguration:
+        Status: !Ref VersioningS3
+    DeletionPolicy: Retain
+Outputs: 
+  S3BucketName:
+    Value: !Ref S3Bucket
+  InstanceId:
+    Value: !Ref WebServer
+  AvailabilityZone:
+    Value: !GetAtt WebServer.AvailabilityZones
+  PublicIp: 
+    Value: !GetAtt WebServer.PublicIp
+  PrivatIp:
+    Value: !GetAtt WebServer.PrivateIp
+  PublicDNS:
+    Value: !GetAtt WebServer.PublicDnsName
+  DBInstanceId:
+    Value: !Ref DbInstance
+  DbAvailabilityZone:
+    Value: !GetAtt DBInstance.AvailabilityZones
+  DBEndPoint:
+    Value: !GetAtt DBinstance.Endpoint.Address
