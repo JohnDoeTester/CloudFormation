@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: > 
+      This Template for Web server or DB server RDS Stack
+Parameters:
+  TypeInstance:
+    Type: String
+    Default: t2.micro
+    AllowedValues: 
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+      - t2.2xlarge
+    Description: Select the Instance Type t2.micro, t2.nano, t2.medium
+  KeySelect:
+    Type: String
+    Default: None
+    Description: Select Instance Existing KeyPair
+  KeyValue:
+    Type: String
+    Default: None
+    AllowedPattern: "[A-Za-z0-9]+"
+    MinLength: '3'
+    MaxLength: '63'
+    Description: Enter here Key Tags Name
+  AZ:
+    Type: String
+    AllowedValues:
+      - ap-south-1a
+      - ap-south-1b
+      - ap-south-1c
+    Description: Select Instance Availability Zones
+  DbInstances:
+    Type: String
+    Default: db.t2.micro
+    AllowedValues: 
+      - db.t2.micro
+      - db.t2.small
+      - db.t2.medium
+      - db.t2.large
+      - db.t2.xlarge
+      - db.t2.2xlarge
+    Description: Select DB Instance Type as per needs
+  EngineDb:
+    Type: String
+    Default: None
+    AllowedValues:
+      - MySQL
+      - PostgreSQL
+      - MicrosoftSQLServer
+      - MariaDB
+      - Oracle
+    Description: Select DB Instance Engine
+  User: 
+    Type: String
+    Default: None
+    AllowedPattern: "[A-Za-z]+"
+    MinLength: '3'
+    MaxLength: '60'
+    Description: Enter Master user Name
+  Password:
+    Type: String
+    Default: None
+    AllowedPattern: "[A-Za-z0-9]+"
+    MinLength: '8' 
+    MaxLength: '20'
+    Description: Enter Master UserPassword
+  Storage: 
+    Type: Number
+    Default: '5'
+    MinValue: '5'
+    MaxValue: '100'
+  Db: 
+    Type: String
+    Default: None
+    AllowedPattern: "[A-Za-z0-9]+"
+    MinLength: '3'
+    MaxLength: '63' 
+Resources:
+  WebServer: # Logical ID is this
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      InstanceType: !Ref TypeInstance
+      ImageId: ami
+      KeyName: !Ref KeySelect
+      Tags:
+        - Key: "Name"
+          Value: !Ref KeyValue
+      AvailabilityZone: 
+        - !Ref AZ
+      SecurityGroups:
+        - Default
+    DeletionPolicy: Snapshot
+  DbInstance: # Logical ID
+    Type: 'AWS::RDS::DBInstance'
+    Properties: 
+      DBIntanceClass: !Ref DbInstances
+      AllocatedStorage: !Ref 
+      Engine: !Ref EngineDb
+      DBName: !Ref Db
+      MasterUserName: !Ref User
+      MasterUserPassword: !Ref Password
+      DBSecurityGroups:
+        - Default
+      AvailabilityZone: !GetAtt WebServer.AvailabilityZones
+      DeletionPolicty: Snapshot
+Outputs:
+  InstanceId: # Logical ID
+    Value: !Ref WebServer
+  AvailabilityZone:
+    Value: !Ref WebServer.AvailabilityZones
+  InstanceID:
+    Value: !Ref DbInstance
