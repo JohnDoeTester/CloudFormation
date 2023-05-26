@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+    LAMP Template for Stack
+Resources:
+  WebInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties: 
+      InstanceType: t2.micro
+      ImageId: ami-0579130fcdc5fb578
+      Monitoring: 'true'
+      Tags:
+        - Key: "Name"
+          Value: WebServer
+      AvailabilityZone:
+        - ap-south-1a
+      SecurityGroups:
+        - !Ref SecurityGroup
+      KeyName: new1
+      UserData:
+        Fn::Base64:
+          !Sub |
+         #!/bin/bash 
+         sudo apt-get update -y 
+         sudo apt install apache2 -y
+         sudo apt install php libapache2-mod-php php-mysql -y
+         sudoapt install php-curl php-json php-cgi -y
+         sudo systemctl restart apache2
+  SecurityGroup: 
+    Type: 'AWS::EC2::SecurityGroups'
+    Properties: 
+      GroupDescription: Enable ssh location for IGW
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  SecurityGroup1:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: enable only rds port
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+  DataBase:
+    Type: 'AWS::RDS::DBInstance'
+    Properties: 
+      DBInstanceClass: db.t2.micro
+      AllocatedStorage: '5'
+      Engine: MySQL
+      DBName: Master
+      MasterUsername: masteruser
+      MasterUserPassword: masterpassword]
+      DBSecurityGroups:
+        - !Ref SecurityGroup1
+      AvailabilityZone: !GetAtt WebInstance.AvailabilityZones
+    DeletionPolicy: Snapshot
+outputs: 
+  InstanceId:
+    value: !Ref WebInstance
+  WebServerAvailabilityZone:
+    Value: !GetAtt WebInstance.AvailabilityZones
+  PublicIp:
+    Value: !GetAtt WebInstance.PublicIp
+  PrivateIp:
+    Value: !GetAtt WebInstance.PrivateIp 
+  DBInstance: 
+    Value: !Ref DataBase
+  DbServerAvailabilityZone:
+    Value: !GetAtt DataBase.AvailabilityZone
+  DNSEndPoint:
+    Value: !GetAtt DataBase.PublicDns.Endpoint
