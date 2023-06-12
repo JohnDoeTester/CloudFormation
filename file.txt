@@ -1,0 +1,64 @@
+<Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+            maxThreads="200" scheme="https" secure="true"
+            SSLEnabled="true"
+            SSLCertificateFile="/etc/ssl/certs/fsuite.crt"
+            SSLCertificateKeyFile="/etc/ssl/certs/fsuite.crt" />
+            
+sudo chmod 600 /etc/ssl/certs/fsuite.pem
+sudo mv fsuite.pem /etc/ssl/certs/fsuite.pem
+
+
+sudo mv fsuite.pem /etc/ssl/certs/fsuite.pem
+sudo chmod 600 /etc/ssl/certs/fsuite.pem
+<Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+            maxThreads="200" scheme="https" secure="true"
+            SSLEnabled="true"
+            keystoreFile="/etc/ssl/certs/fsuite.pem"
+            keystoreType="PEM"
+            keystorePass="your_keystore_password" />
+            
+            
+ openssl pkcs12 -export -out fsuite.p12 -in fsuite.pem -name fsuite.org
+sudo mv fsuite.p12 /etc/ssl/certs/fsuite.p12
+<Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+            maxThreads="200" scheme="https" secure="true"
+            SSLEnabled="true"
+            keystoreFile="/etc/ssl/certs/fsuite.p12"
+            keystoreType="PKCS12"
+            keystorePass="your_keystore_password" />
+
+<Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+            maxThreads="200" scheme="https" secure="true"
+            SSLEnabled="true"
+            SSLCertificateFile="/path/to/combined.pem"
+            SSLCertificateKeyFile="/path/to/combined.pem" />
+<Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+            maxThreads="200" scheme="https" secure="true"
+            SSLEnabled="true"
+            SSLCertificateFile="/etc/ssl/certs/fsuite.crt"
+            SSLCertificateKeyFile="/etc/ssl/certs/fsuite.key"
+            keystorePass="your_keystore_password" />
+
+<Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+            maxThreads="200" scheme="https" secure="true"
+            SSLEnabled="true"
+            SSLCertificateFile="/etc/ssl/certs/fsuite.crt"
+            SSLCertificateKeyFile="/etc/ssl/certs/fsuite.key" />
+ 
+openssl pkcs12 -export -in fsuite.crt -inkey fsuite.key -out fsuite.p12 -name fsuite -passout pass:your_keystore_password
+<Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+            maxThreads="200" scheme="https" secure="true"
+            SSLEnabled="true"
+            keystoreFile="/etc/ssl/certs/fsuite.p12"
+            keystoreType="PKCS12"
+            keystorePass="your_keystore_password" />
+
+keytool -importcert -keystore fsuite.keystore -alias fsuite -file fsuite.crt -keypass your_keystore_password -storepass your_keystore_password
+<Connector port="443" protocol="org.apache.coyote.http11.Http11NioProtocol"
+            maxThreads="200" scheme="https" secure="true"
+            SSLEnabled="true"
+            keystoreFile="/etc/ssl/certs/fsuite.keystore"
+            keystoreType="PKCS12"
+            keystorePass="your_keystore_password" />
+
+
